@@ -12,3 +12,11 @@ The Express/NodeJS app launches on port 9000
 Steps to perform once cloned to ensure all dependencies are downloaded so that you can run it:
 1.  cd api && npm install
 2.  cd client && npm install
+
+#### Docker Build
+
+### `docker build . -t brewapp`
+To build a docker images with a name brewapp
+
+### `docker run -dp 5000:5000 brewapp`
+To run the the container use the above command and the app will be avaiable on port 5000
