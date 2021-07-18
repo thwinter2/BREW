@@ -108,7 +108,7 @@ function Map() {
   // Load the google maps API via a script tag
   // And activate the places library
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_HENNY,
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_BACKUP_API_KEY,
     libraries,
   });
 
