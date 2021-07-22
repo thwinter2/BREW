@@ -5,6 +5,7 @@ import {
   Circle,
   useLoadScript,
   Marker,
+  InfoWindow,
 } from "@react-google-maps/api";
 
 const libraries = ["places"];
@@ -63,37 +64,45 @@ function Map() {
   const mapRef = React.useRef();
 
   const [markers, setMarkers] = React.useState([]);
+  const [selectedBrew, setSelectedBrew] = React.useState(null);
 
   // When currentLoc is changed (which refers to the location the map is centered on),
   // We want to perform a new search for breweries nearby.  This happens on page load,
   // And when someone searches a different location in the search bar or updates the
   // Search radius.
   React.useEffect(() => {
+    var breweries = [];
     if (!google) return;
-
+    
     let service = new google.maps.places.PlacesService(mapRef.current);
-
+    
     let request = {
       location: currentLoc,
       radius: circleOptions.radius,
       type: ["bar"]
     }
-
+    
     service.nearbySearch(request, (results, status, pagination) => {
       if (status !== google.maps.places.PlacesServiceStatus.OK || !results) return;
       for (let i = 0; i < results.length; i++) {
         let result = results[i];
         if (!result) continue;
-
+        breweries.push(result);
         setMarkers((current) => [
           ...current,
           {
+            business_status: result.business_status,
             position: result.geometry.location,
+            name: result.name,
+            opening_hours: result.opening_hours,
+            rating: result.rating,
+            vicinity: result.vicinity,
+            photos: result.photos,
             key: uuid()
           }
         ]);
       }
-
+      
       // Since results are paginated (<= 20 results per page), we call
       // Next page, which calls this same callback function with the new results.
       // Each call has a 2 second cooldown, so results show up 20 at a time.
@@ -125,7 +134,28 @@ function Map() {
       <GoogleMap onLoad={onLoad} on mapContainerStyle={mapContainerStyle} zoom={13} center={currentLoc} options={mapOptions}>
         <Circle center={currentLoc} options={circleOptions} />
         <Marker position={currentLoc} />
-        {markers.map(marker => <Marker position={marker.position} key={marker.key} icon={{ url: "/beer_mug.svg", scaledSize: new google.maps.Size(30, 30) }} />)}
+        {markers.map(marker => <Marker 
+        key={marker.key} 
+        position={marker.position}
+        icon={{ url: "/beer_mug.svg", scaledSize: new google.maps.Size(30, 30) }}
+        onMouseOver={() => {
+          setSelectedBrew(marker);
+        }}
+        />)}
+        {selectedBrew && (
+          <InfoWindow
+            onCloseClick={() => {
+              setSelectedBrew(null);
+            }}
+            position={selectedBrew.position}
+            >
+              <div>
+                <p><b>{JSON.stringify(selectedBrew.name)}</b><br></br>
+                {JSON.stringify(selectedBrew.vicinity)}<br></br>
+                {`Rating: ${JSON.stringify(selectedBrew.rating)}`}</p>
+              </div>
+            </InfoWindow>
+        )}
       </GoogleMap>
     </div>
   );
