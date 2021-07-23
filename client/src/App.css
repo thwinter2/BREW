@@ -50,7 +50,7 @@ footer {
   width: 100%;
 }
 
-div.scaled {
-  transform: scale(1.5);
-  padding: 50 200;
+div.leftPanel {
+  transform: scale(1);
+  padding-bottom: 50em;
 }

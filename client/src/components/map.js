@@ -62,10 +62,11 @@ function Map() {
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492,
     lng: -73.8056894
-  })
+  });
 
   const mapRef = React.useRef();
-
+  
+  const [NWCorner, setNWCorner] = React.useState(null);
   const [markers, setMarkers] = React.useState([]);
   const [hoverBrew, setHoverBrew] = React.useState(null);
   const [selectBrew, setSelectBrew] = React.useState(null);
@@ -91,7 +92,7 @@ function Map() {
       for (let i = 0; i < results.length; i++) {
         let result = results[i];
         if (!result) continue;
-        breweries.push(result);
+        // breweries.push(result);
         setMarkers((current) => [
           ...current,
           {
@@ -115,7 +116,7 @@ function Map() {
       if (pagination && pagination.hasNextPage) {
         pagination.nextPage();
       }
-      console.log(breweries);
+      // console.log(breweries);
     });
   }, [currentLoc]);
 
@@ -128,7 +129,7 @@ function Map() {
 
   // Use a memoized reference to the map for 
   const onLoad = React.useCallback((map) => {
-    mapRef.current = map;    
+    mapRef.current = map;
   }, []);
 
   if (loadError) return "Error loading maps."
@@ -136,7 +137,30 @@ function Map() {
 
   return (
     <div>
-      <GoogleMap onLoad={onLoad} on mapContainerStyle={mapContainerStyle} zoom={13} center={currentLoc} options={mapOptions}>
+      <GoogleMap 
+      onLoad={onLoad} 
+      on mapContainerStyle={mapContainerStyle} 
+      zoom={13} center={currentLoc} 
+      options={mapOptions}
+      onClick={() => {
+        setHoverBrew(null);
+        setSelectBrew(null);
+      }}
+      onBoundsChanged={() => {
+        var bounds = mapRef.current.getBounds();
+        var NECorner = bounds.getNorthEast();
+        var SWCorner = bounds.getSouthWest();
+        try{
+          var local_NWCorner = new google.maps.LatLng(NECorner.lat(), SWCorner.lng());
+        }
+        catch{
+          ;
+        }
+        finally{
+          setNWCorner(local_NWCorner);
+        }
+      }}
+      >
         <Circle center={currentLoc} options={circleOptions} />
         <Marker position={currentLoc} />
         {markers.map(marker => <Marker 
@@ -168,18 +192,17 @@ function Map() {
         )}
         {selectBrew && (
           <InfoBox
-            position={selectBrew.position}
+            position={NWCorner}
             onCloseClick={() => {
               setSelectBrew(null);
             }}
           >
-            <div class="scaled" style={{backgroundColor: 'white', opacity: 1}}>
+            <div class="leftPanel" style={{backgroundColor: 'white', opacity: 1}}>
                 <h3>{JSON.stringify(selectBrew.name)}</h3><br></br>
                 {JSON.stringify(selectBrew.vicinity)}<br></br>
                 {`Status: ${JSON.stringify(selectBrew.business_status)}`}<br></br>
                 {`Currently Open: ${JSON.stringify(selectBrew.opening_hours.open_now)}`}<br></br>
-                {`Rating: ${JSON.stringify(selectBrew.rating)}`}<br></br>
-              
+                {`Rating: ${JSON.stringify(selectBrew.rating)}`}<br></br>  
             </div>
           </InfoBox>
         )}
