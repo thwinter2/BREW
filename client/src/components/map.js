@@ -6,6 +6,7 @@ import {
   useLoadScript,
   Marker,
   InfoWindow,
+  InfoBox,
 } from "@react-google-maps/api";
 
 const libraries = ["places"];
@@ -33,6 +34,8 @@ let circleOptions = {
   radius: 8046.72,  // This is in meters
   zIndex: 1
 }
+
+
 
 let google;
 
@@ -64,7 +67,8 @@ function Map() {
   const mapRef = React.useRef();
 
   const [markers, setMarkers] = React.useState([]);
-  const [selectedBrew, setSelectedBrew] = React.useState(null);
+  const [hoverBrew, setHoverBrew] = React.useState(null);
+  const [selectBrew, setSelectBrew] = React.useState(null);
 
   // When currentLoc is changed (which refers to the location the map is centered on),
   // We want to perform a new search for breweries nearby.  This happens on page load,
@@ -111,6 +115,7 @@ function Map() {
       if (pagination && pagination.hasNextPage) {
         pagination.nextPage();
       }
+      console.log(breweries);
     });
   }, [currentLoc]);
 
@@ -139,22 +144,44 @@ function Map() {
         position={marker.position}
         icon={{ url: "/beer_mug.svg", scaledSize: new google.maps.Size(30, 30) }}
         onMouseOver={() => {
-          setSelectedBrew(marker);
+          setHoverBrew(marker);
+        }}
+        onClick={() => {
+          setSelectBrew(marker);
         }}
         />)}
-        {selectedBrew && (
+        {hoverBrew && (
           <InfoWindow
             onCloseClick={() => {
-              setSelectedBrew(null);
+              setHoverBrew(null);
             }}
-            position={selectedBrew.position}
+            position={hoverBrew.position}
             >
-              <div>
-                <p><b>{JSON.stringify(selectedBrew.name)}</b><br></br>
-                {JSON.stringify(selectedBrew.vicinity)}<br></br>
-                {`Rating: ${JSON.stringify(selectedBrew.rating)}`}</p>
+              <div style={{backgroundColor: 'white', opacity: 1}}>
+                <p>
+                  <b>{JSON.stringify(hoverBrew.name)}</b><br></br>
+                  {JSON.stringify(hoverBrew.vicinity)}<br></br>
+                  {`Rating: ${JSON.stringify(hoverBrew.rating)}`}
+                </p>
               </div>
             </InfoWindow>
+        )}
+        {selectBrew && (
+          <InfoBox
+            position={selectBrew.position}
+            onCloseClick={() => {
+              setSelectBrew(null);
+            }}
+          >
+            <div class="scaled" style={{backgroundColor: 'white', opacity: 1}}>
+                <h3>{JSON.stringify(selectBrew.name)}</h3><br></br>
+                {JSON.stringify(selectBrew.vicinity)}<br></br>
+                {`Status: ${JSON.stringify(selectBrew.business_status)}`}<br></br>
+                {`Currently Open: ${JSON.stringify(selectBrew.opening_hours.open_now)}`}<br></br>
+                {`Rating: ${JSON.stringify(selectBrew.rating)}`}<br></br>
+              
+            </div>
+          </InfoBox>
         )}
       </GoogleMap>
     </div>
