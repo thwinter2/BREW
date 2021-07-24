@@ -12,14 +12,6 @@ import {
 } from "@react-google-maps/api";
 
 const libraries = ["places"];
-const options = {
-  disableDefaultUI: true,
-  zoomControl: true
-};
-const center = {
-  lat: 43.6532,
-  lng: -79.3832
-};
 
 const mapContainerStyle = {
   width: '100vw',
@@ -44,8 +36,6 @@ let circleOptions = {
   radius: 8046.72,  // This is in meters
   zIndex: 1
 }
-
-
 
 let google;
 
@@ -98,8 +88,6 @@ function Map() {
   // And when someone searches a different location in the search bar or updates the
   // Search radius.
   React.useEffect(() => {
-
-    var breweries = [];
     if (!google) return;
     
     let service = new google.maps.places.PlacesService(mapRef.current);
@@ -115,7 +103,7 @@ function Map() {
       for (let i = 0; i < results.length; i++) {
         let result = results[i];
         if (!result) continue;
-        // breweries.push(result);
+        
         setMarkers((current) => [
           ...current,
           {
