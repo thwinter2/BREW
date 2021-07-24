@@ -2,5 +2,8 @@
   "scripts": {
     "start": "(cd api && npm start) & (cd client && npm start)",
     "install": "(cd api && npm install) & (cd client && npm install)"
+  },
+  "dependencies": {
+    "chokidar": "^3.5.2"
   }
 }

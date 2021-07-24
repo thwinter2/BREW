@@ -7,7 +7,8 @@ import {
   Circle,
   useLoadScript,
   Marker,
-  InfoWindow, 
+  InfoWindow,
+  InfoBox,
 } from "@react-google-maps/api";
 
 const libraries = ["places"];
@@ -44,6 +45,8 @@ let circleOptions = {
   zIndex: 1
 }
 
+
+
 let google;
 
 function Map() {
@@ -69,7 +72,7 @@ function Map() {
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492,
     lng: -73.8056894
-  })
+  });
 
   const panTo = React.useCallback(({ lat, lng }) => {
     mapRef.current.panTo({ lat, lng });
@@ -84,9 +87,11 @@ function Map() {
   }, []);
 
   const mapRef = React.useRef();
-
+  
+  const [NWCorner, setNWCorner] = React.useState(null);
   const [markers, setMarkers] = React.useState([]);
-  const [selectedBrew, setSelectedBrew] = React.useState(null);
+  const [hoverBrew, setHoverBrew] = React.useState(null);
+  const [selectBrew, setSelectBrew] = React.useState(null);
 
   // When currentLoc is changed (which refers to the location the map is centered on),
   // We want to perform a new search for breweries nearby.  This happens on page load,
@@ -110,7 +115,7 @@ function Map() {
       for (let i = 0; i < results.length; i++) {
         let result = results[i];
         if (!result) continue;
-        breweries.push(result);
+        // breweries.push(result);
         setMarkers((current) => [
           ...current,
           {
@@ -134,6 +139,7 @@ function Map() {
       if (pagination && pagination.hasNextPage) {
         pagination.nextPage();
       }
+      // console.log(breweries);
     });
   }, [currentLoc]);
 
@@ -149,7 +155,7 @@ function Map() {
 
   // Use a memoized reference to the map for 
   const onLoad = React.useCallback((map) => {
-    mapRef.current = map;    
+    mapRef.current = map;
   }, []);
 
   if (loadError) return "Error loading maps."
@@ -158,8 +164,30 @@ function Map() {
   return (
     <div>      <Search panTo={panTo} />
     <div>
-
-      <GoogleMap onLoad={onLoad} on mapContainerStyle={mapContainerStyle} zoom={13} center={currentLoc} options={mapOptions}>
+      <GoogleMap 
+      onLoad={onLoad} 
+      on mapContainerStyle={mapContainerStyle} 
+      zoom={13} center={currentLoc} 
+      options={mapOptions}
+      onClick={() => {
+        setHoverBrew(null);
+        setSelectBrew(null);
+      }}
+      onBoundsChanged={() => {
+        var bounds = mapRef.current.getBounds();
+        var NECorner = bounds.getNorthEast();
+        var SWCorner = bounds.getSouthWest();
+        try{
+          var local_NWCorner = new google.maps.LatLng(NECorner.lat(), SWCorner.lng());
+        }
+        catch{
+          ;
+        }
+        finally{
+          setNWCorner(local_NWCorner);
+        }
+      }}
+      >
 
         <Circle center={currentLoc} options={circleOptions} />
         <Marker position={currentLoc} />
@@ -168,22 +196,43 @@ function Map() {
         position={marker.position}
         icon={{ url: "/beer_mug.svg", scaledSize: new google.maps.Size(30, 30) }}
         onMouseOver={() => {
-          setSelectedBrew(marker);
+          setHoverBrew(marker);
+        }}
+        onClick={() => {
+          setSelectBrew(marker);
         }}
         />)}
-        {selectedBrew && (
+        {hoverBrew && (
           <InfoWindow
             onCloseClick={() => {
-              setSelectedBrew(null);
+              setHoverBrew(null);
             }}
-            position={selectedBrew.position}
+            position={hoverBrew.position}
             >
-              <div>
-                <p><b>{JSON.stringify(selectedBrew.name)}</b><br></br>
-                {JSON.stringify(selectedBrew.vicinity)}<br></br>
-                {`Rating: ${JSON.stringify(selectedBrew.rating)}`}</p>
+              <div style={{backgroundColor: 'white', opacity: 1}}>
+                <p>
+                  <b>{JSON.stringify(hoverBrew.name)}</b><br></br>
+                  {JSON.stringify(hoverBrew.vicinity)}<br></br>
+                  {`Rating: ${JSON.stringify(hoverBrew.rating)}`}
+                </p>
               </div>
             </InfoWindow>
+        )}
+        {selectBrew && (
+          <InfoBox
+            position={NWCorner}
+            onCloseClick={() => {
+              setSelectBrew(null);
+            }}
+          >
+            <div class="leftPanel" style={{backgroundColor: 'white', opacity: 1}}>
+                <h3>{JSON.stringify(selectBrew.name)}</h3><br></br>
+                {JSON.stringify(selectBrew.vicinity)}<br></br>
+                {`Status: ${JSON.stringify(selectBrew.business_status)}`}<br></br>
+                {`Currently Open: ${JSON.stringify(selectBrew.opening_hours.open_now)}`}<br></br>
+                {`Rating: ${JSON.stringify(selectBrew.rating)}`}<br></br>  
+            </div>
+          </InfoBox>
         )}
       </GoogleMap>
     </div>

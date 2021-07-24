@@ -49,3 +49,8 @@ footer {
   left: 0;
   width: 100%;
 }
+
+div.leftPanel {
+  transform: scale(1);
+  padding-bottom: 50em;
+}
