@@ -1,5 +1,7 @@
 import React from "react";
 import uuid from "react-uuid";
+import Search from "./Search";
+
 import {
   GoogleMap,
   Circle,
@@ -10,6 +12,14 @@ import {
 } from "@react-google-maps/api";
 
 const libraries = ["places"];
+const options = {
+  disableDefaultUI: true,
+  zoomControl: true
+};
+const center = {
+  lat: 43.6532,
+  lng: -79.3832
+};
 
 const mapContainerStyle = {
   width: '100vw',
@@ -64,6 +74,18 @@ function Map() {
     lng: -73.8056894
   });
 
+  const panTo = React.useCallback(({ lat, lng }) => {
+    mapRef.current.panTo({ lat, lng });
+    navigator.geolocation.getCurrentPosition((position) => {
+      setCurrentLoc({
+        lat: lat,
+        lng: lng
+      })
+    });
+    console.log(lat, lng)
+
+  }, []);
+
   const mapRef = React.useRef();
   
   const [NWCorner, setNWCorner] = React.useState(null);
@@ -76,6 +98,7 @@ function Map() {
   // And when someone searches a different location in the search bar or updates the
   // Search radius.
   React.useEffect(() => {
+
     var breweries = [];
     if (!google) return;
     
@@ -127,6 +150,9 @@ function Map() {
     libraries,
   });
 
+
+
+
   // Use a memoized reference to the map for 
   const onLoad = React.useCallback((map) => {
     mapRef.current = map;
@@ -136,6 +162,7 @@ function Map() {
   if (!isLoaded) return "Loading Maps..."
 
   return (
+    <div>      <Search panTo={panTo} />
     <div>
       <GoogleMap 
       onLoad={onLoad} 
@@ -161,6 +188,7 @@ function Map() {
         }
       }}
       >
+
         <Circle center={currentLoc} options={circleOptions} />
         <Marker position={currentLoc} />
         {markers.map(marker => <Marker 
@@ -207,6 +235,7 @@ function Map() {
           </InfoBox>
         )}
       </GoogleMap>
+    </div>
     </div>
   );
 }
