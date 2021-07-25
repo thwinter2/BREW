@@ -7,7 +7,7 @@ import Profile from "./components/profile/Profile";
 import Landing from "./components/landing/Landing";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
-import Map from './components/map';
+import Map from './components/map/Map';
 
 import "./App.css";
 
@@ -16,9 +16,9 @@ function App() {
   // And show the app content.  By now, all components should have mounted.
   const onWindowLoad = () => {
     const ele = document.getElementById('ipl-progress-indicator')
-      if (ele) {
-        ele.classList.add('available')
-      }
+    if (ele) {
+      ele.classList.add('available')
+    }
 
     window.removeEventListener('load', onWindowLoad);
   };
@@ -28,13 +28,13 @@ function App() {
     <Provider store={store}>
       <Router>
         <div className="App">
-          <Navbar />
-          <Route exact path="/" component={Landing} />
-          <div className="container">
+          {/* <Navbar /> */}
+          {/* <Route exact path="/" component={Landing} /> */}
+          {/* <div className="container">
             <Route exact path="/profile" component={Profile} />
-          </div>
+          </div> */}
           <Map />
-          <Footer />
+          {/* <Footer /> */}
         </div>
       </Router>
     </Provider>
