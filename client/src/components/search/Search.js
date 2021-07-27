@@ -9,6 +9,7 @@ import {
   Combobox,
   ComboboxInput,
   ComboboxPopover,
+  ComboboxList,
   ComboboxOption,
 } from "@reach/combobox";
 import "@reach/combobox/styles.css";
@@ -25,19 +26,18 @@ import "./Search.css";
 const radiusOptions = [
   {
     key: '5',
-    value: '5 Miles'
+    value: '5 Miles',
+    zoomLevel: 13
   },
   {
     key: '10',
-    value: '10 Miles'
+    value: '10 Miles',
+    zoomLevel: 12
   },
   {
     key: '25',
-    value: '25 Miles'
-  },
-  {
-    key: '50',
-    value: '50 Miles'
+    value: '25 Miles',
+    zoomLevel: 10
   }
 ];
 
@@ -69,7 +69,8 @@ function Search({ panTo, radiusUpdate }) {
   const onRadiusUpdate = (radiusStr) => {
     let radius = parseInt(radiusStr);
     let radiusMetric = radius * 1609.344;
-    radiusUpdate(radiusMetric);
+    let zoomLevel = radiusOptions.filter(x => x.key === radiusStr)[0].zoomLevel;
+    radiusUpdate(radiusMetric, zoomLevel);
   };
 
   return (
@@ -77,8 +78,10 @@ function Search({ panTo, radiusUpdate }) {
       <Combobox onSelect={onLocationSelect}>
         <ComboboxInput value={value} onChange={(event) => { setValue(event.target.value) }} disabled={!ready} placeholder="Enter an address, zip, etc." />
         <ComboboxPopover>
-          {status === "OK" &&
-            data.map(({ id, description }) => <ComboboxOption key={id} value={description}></ComboboxOption>)}
+          <ComboboxList>
+            {status === "OK" &&
+              data.map(({ id, description }) => <ComboboxOption key={id} value={description}></ComboboxOption>)}
+          </ComboboxList>
         </ComboboxPopover>
       </Combobox>
       <Listbox onChange={(newValue) => { onRadiusUpdate(newValue) }} defaultValue={radiusOptions[0].key}>
