@@ -7,7 +7,7 @@ import Profile from "./components/profile/Profile";
 import Landing from "./components/landing/Landing";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
-import Map from './components/map';
+import Map from './components/map/Map';
 import CategoryPreferences from './components/preferences/CategoryPreferences';
 import StylePreferences from './components/preferences/StylePreferences';
 
