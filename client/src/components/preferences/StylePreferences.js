@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 
-export default class Preferences extends Component {
+export default class StylePreferences extends Component {
   // handleSubmit(e) {
   //   console.log(this.state);
   //   e.preventDefault();
@@ -34,33 +34,11 @@ export default class Preferences extends Component {
       .catch(function (error) {
         console.log(error);
       })
-      
-
-    axios.get('http://localhost:5000/categories/')
-    .then(response => {
-      let categories_array = [];
-      // console.log(response.data);
-      for(let category of response.data){
-        categories_array.push(category);
-      }
-      this.setState({
-        categories: categories_array
-      })   
-    })
-    .catch((error) => {
-      console.log(error);
-    })
   }
 
   constructor() {
       super();
       this.state = {
-        categories: [
-          {id: 1, cat_name: 'beer1'},
-          {id: 2, cat_name: 'beer2'},
-          {id: 3, cat_name: 'beer3'}
-        ],
-        selCategories: 'test_cats',
         styles: [
           {id: 1, cat_id: 1, style_name: 'style_1'},
           {id: 2, cat_id: 1, style_name: 'style_2'},
@@ -83,12 +61,11 @@ export default class Preferences extends Component {
  
     for (let i = 0; i < selectedOption.length; i++){
       console.log(selectedOption.item(i));
-      console.log(this.state.categories);
       console.log(this.state.styles);
       selected.push(selectedOption.item(i).value);
     }
   
-    this.setState({selCategories: selected});
+    this.setState({selStyles: selected});
   }
       
   handleSubmit(event) {
@@ -99,14 +76,12 @@ export default class Preferences extends Component {
   render() {
     return (
       <div>
-        <h3>Select Your Beer Preferences</h3>
         <form onSubmit={this.handleSubmit}>
-            
-          <strong>Select Category:</strong>
+          <strong>Select Styles:</strong>
           <select multiple onChange={this.handleChange.bind(this)}>
            {
-            this.state.categories.map(category => (
-               <option value={category.id}>{category.cat_name}</option>
+            this.state.styles.map(style => (
+               <option value={style}>{style.style_name}</option>
              ))
           }
           </select>

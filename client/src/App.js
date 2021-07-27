@@ -8,7 +8,8 @@ import Landing from "./components/landing/Landing";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
 import Map from './components/map';
-import Preferences from './components/preferences/Preferences';
+import CategoryPreferences from './components/preferences/CategoryPreferences';
+import StylePreferences from './components/preferences/StylePreferences';
 
 import "./App.css";
 
@@ -34,7 +35,8 @@ function App() {
           <div className="container">
             <Route exact path="/profile" component={Profile} />
           </div>
-          <Preferences />
+          <CategoryPreferences />
+          <StylePreferences />
           <Map />
           <Footer />
         </div>
