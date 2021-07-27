@@ -15,6 +15,14 @@ const UserSchema = new Schema({
     required: true,
     default:
       "https://res.cloudinary.com/geekysrm/image/upload/v1542221619/default-user.png"
+  },
+  preferences: {
+    styles: {
+      type: Array,
+    },
+    categories: {
+      type: Array,
+    },
   }
 });
 
