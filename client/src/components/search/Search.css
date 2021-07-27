@@ -1,0 +1,25 @@
+.search {
+  display: flex;
+  padding: 1rem;
+  z-index: 1;
+  position: absolute;
+  width: 100%;
+  justify-content: center;
+}
+
+.search input {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.search span {
+  background-color: white;
+}
+
+.search *:focus {
+  outline: none;
+}
+
+[data-reach-combobox]:focus, [data-reach-listbox-input]:focus {
+  outline: none;
+}

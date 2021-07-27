@@ -18,9 +18,9 @@ function App() {
   // And show the app content.  By now, all components should have mounted.
   const onWindowLoad = () => {
     const ele = document.getElementById('ipl-progress-indicator')
-      if (ele) {
-        ele.classList.add('available')
-      }
+    if (ele) {
+      ele.classList.add('available')
+    }
 
     window.removeEventListener('load', onWindowLoad);
   };

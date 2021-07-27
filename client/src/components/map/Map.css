@@ -1,0 +1,17 @@
+.mapRoot {
+    border-top: 1px solid black;
+}
+
+.leftPanel {
+    padding: 1rem;
+    background-color: #2E1503;
+    opacity: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 500px;
+    color: white;
+}
+
+.leftPanel img {
+    margin-bottom: 1rem;
+}
