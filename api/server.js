@@ -10,6 +10,7 @@ require('dotenv').config();
 
 const stylesRouter = require('./routes/styles');
 const categoriesRouter = require('./routes/categories');
+const usersRouter = require('./routes/users');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -42,6 +43,7 @@ app.use(passport.session());
 
 app.use('/styles', stylesRouter);
 app.use('/categories', categoriesRouter);
+app.use('/users', usersRouter);
   
 // Passport config
 require("./passport");
