@@ -8,6 +8,7 @@ import Landing from "./components/landing/Landing";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
 import Map from './components/map';
+import Preferences from './components/preferences/Preferences';
 
 import "./App.css";
 
@@ -33,6 +34,7 @@ function App() {
           <div className="container">
             <Route exact path="/profile" component={Profile} />
           </div>
+          <Preferences />
           <Map />
           <Footer />
         </div>

@@ -21,7 +21,8 @@ app.use(
 );
 
 // MongoDB configuration
-const db = process.env.MONGO_URI;
+// const db = process.env.MONGO_URI;
+const db = 'mongodb://127.0.0.1:27017/AthleteSalaries';
 
 // Use mongoose to connect to mongoDB
 mongoose
