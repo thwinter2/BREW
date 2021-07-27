@@ -8,11 +8,13 @@ const StyleSchema = new Schema({
   cat_id: {
     type: String,
   },
-style_name: {
+  style_name: {
     type: String,
-},
-last_mod: {
-},
+  },
+  last_mod: {
+  },
 });
 
-module.exports = Style = mongoose.model("styles", StyleSchema);
+const Style = mongoose.model("styles", StyleSchema);
+
+module.exports = {Style, StyleSchema};

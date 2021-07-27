@@ -1,8 +1,8 @@
 const router = require('express').Router();
-const mongoose = require("mongoose");
-const Category = mongoose.model("categories");
+// const mongoose = require("mongoose");
+const {Category} = require('../models/Category');
 
-router.route('/styles').get((req, res) => {
+router.route('/').get((req, res) => {
   Category.find()
     .then(categories => res.json(categories))
     .catch(err => res.status(400).json('Categories Error: ' + err));
