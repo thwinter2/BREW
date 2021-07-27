@@ -28,13 +28,13 @@ function App() {
     <Provider store={store}>
       <Router>
         <div className="App">
-          {/* <Navbar /> */}
-          {/* <Route exact path="/" component={Landing} /> */}
-          {/* <div className="container">
+          <Navbar />
+          <Route exact path="/" component={Landing} />
+          <div className="container">
             <Route exact path="/profile" component={Profile} />
-          </div> */}
+          </div>
           <Map />
-          {/* <Footer /> */}
+          <Footer />
         </div>
       </Router>
     </Provider>

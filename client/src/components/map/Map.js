@@ -2,6 +2,8 @@ import React from "react";
 import uuid from "react-uuid";
 import StarRatings from 'react-star-ratings';
 import Search from "../search/Search";
+import Loader from "../loader/Loader";
+import MapStyles from "./MapStyles";
 
 import "./Map.css";
 
@@ -17,11 +19,12 @@ import {
 const libraries = ["places"];
 
 const mapContainerStyle = {
-  width: '100vw',
+  width: '100%',
   height: '100vh',
 }
 
 const mapOptions = {
+  styles: MapStyles,
   disableDefaultUI: true,
   zoomControl: true,
 }
@@ -42,10 +45,21 @@ let circleOptions = {
 
 let google;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function Map() {
-  // Default location is Jamaica, NY because why not
+  const mapRef = React.useRef();
+  const circleRef = React.useRef();
+  const serviceRef = React.useRef();
+  const [NWCorner, setNWCorner] = React.useState(null);
+  const [markers, setMarkers] = React.useState([]);
+  const [hoverBrew, setHoverBrew] = React.useState(null);
+  const [selectBrew, setSelectBrew] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(false);
   const [currentLoc, setCurrentLoc] = React.useState({
-    lat: 40.691492,
+    lat: 40.691492, // Default location is Jamaica, NY because why not
     lng: -73.8056894
   });
 
@@ -55,6 +69,7 @@ function Map() {
   // Update currentLoc on the map.
   const onWindowLoad = () => {
     google = window.google;
+    serviceRef.current = new google.maps.places.PlacesService(mapRef.current);
 
     navigator.geolocation.getCurrentPosition((position) => {
       setCurrentLoc({
@@ -67,13 +82,6 @@ function Map() {
   };
   window.addEventListener('load', onWindowLoad);
 
-  const mapRef = React.useRef();
-  const circleRef = React.useRef();
-  const [NWCorner, setNWCorner] = React.useState(null);
-  const [markers, setMarkers] = React.useState([]);
-  const [hoverBrew, setHoverBrew] = React.useState(null);
-  const [selectBrew, setSelectBrew] = React.useState(null);
-
   // Update the map when a new location is selected from the search
   // By updating the center of the map.  This will trigger a new
   // Set of calls to the Places API to find breweries nearby.
@@ -82,54 +90,67 @@ function Map() {
       lat: lat,
       lng: lng
     });
-
-  }, []);
+  }, [currentLoc]);
 
   // Update map when a new radius for search is selected.  This will
   // Trigger a new set of calls to the Places API to find breweries
   // In the new radius.
-  const radiusUpdate = React.useCallback((radiusMetric) => {
+  const radiusUpdate = React.useCallback((radiusMetric, zoomLevel) => {
     circleOptions.radius = radiusMetric;
     circleRef.current.setRadius(radiusMetric);
+    mapRef.current.setZoom(zoomLevel);
   }, []);
 
+  // When the radius is changed, force an update of the current location
+  // To the same value it is so that we search for bars again (but this time
+  // With the larger radius).
   const onRadiusChanged = React.useCallback(() => {
-    searchForBars();
-  }, []);
+    setCurrentLoc({
+      lat: currentLoc.lat,
+      lng: currentLoc.lng
+    });
+  }, [currentLoc]);
 
-  // 
-  const searchForBars = () => {
+  // When currentLoc is changed (which refers to the location the map is centered on),
+  // We want to perform a new search for breweries nearby.  This happens on page load,
+  // And when someone searches a different location in the search bar or updates the
+  // Search radius.
+  React.useEffect(() => {
     if (!google) return;
 
     setMarkers([]);
 
-    // Reset the zoom level
-    mapRef.current.setZoom(13);
+    setIsLoading(true);
 
-    let service = new google.maps.places.PlacesService(mapRef.current);
+    let service = serviceRef.current;
 
     let request = {
       location: currentLoc,
-      radius: circleOptions.radius,
-      type: ["bar"]
+      radius: circleOptions.radius.toString(),
+      query: 'brewery'
     }
 
-    service.nearbySearch(request, (results, status, pagination) => {
+    service.textSearch(request, async (results, status, pagination) => {
       if (status !== google.maps.places.PlacesServiceStatus.OK || !results) return;
       for (let i = 0; i < results.length; i++) {
         let result = results[i];
         if (!result) continue;
 
+        // Only show marker if it is within the radius, since textSearch can return
+        // Results outside of this radius (even when specified - yeah its dumb)
+        let currentLocLatLng = new google.maps.LatLng(currentLoc.lat, currentLoc.lng);
+        let distance = google.maps.geometry.spherical.computeDistanceBetween(currentLocLatLng, result.geometry.location);
+        if (distance > circleOptions.radius) {
+          continue;
+        }
+
+        // Add to collection to show on map
         setMarkers((current) => [
           ...current,
           {
-            business_status: result.business_status,
+            data_populated: false,
             position: result.geometry.location,
-            name: result.name,
-            opening_hours: result.opening_hours,
-            rating: result.rating,
-            vicinity: result.vicinity,
-            photos: result.photos,
+            placeId: result.place_id,
             key: uuid()
           }
         ]);
@@ -143,15 +164,11 @@ function Map() {
       if (pagination && pagination.hasNextPage) {
         pagination.nextPage();
       }
+      else {
+        setIsLoading(false);
+      }
     });
-  };
 
-  // When currentLoc is changed (which refers to the location the map is centered on),
-  // We want to perform a new search for breweries nearby.  This happens on page load,
-  // And when someone searches a different location in the search bar or updates the
-  // Search radius.
-  React.useEffect(() => {
-    searchForBars();
   }, [currentLoc]);
 
   // Load the google maps API via a script tag
@@ -194,20 +211,56 @@ function Map() {
     }
   };
 
+  // TODO: Add a call to the API to get the beers at this location, and set it on this marker
+  const getDetails = (marker) => {
+    return new Promise((resolve, reject) => {
+      if (marker.data_populated) return resolve();
+
+      setIsLoading(true);
+
+      let detailsRequest = {
+        placeId: marker.placeId
+      };
+
+      let service = serviceRef.current;
+      service.getDetails(detailsRequest, (place, status) => {
+        console.log("Details request status: ", status);
+        if (status !== google.maps.places.PlacesServiceStatus.OK || !place) return reject();
+
+        marker.business_status = place.business_status;
+        marker.name = place.name;
+        marker.opening_hours = place.opening_hours ? place.opening_hours : {};
+        marker.rating = place.rating;
+        marker.user_ratings_total = place.user_ratings_total;
+        marker.address = place.formatted_address;
+        marker.phone_num = place.formatted_phone_number;
+        marker.photos = place.photos;
+        marker.reviews = place.reviews;
+        marker.data_populated = true;
+
+        setIsLoading(false);
+
+        return resolve();
+      });
+    });
+  };
+
   return (
-    <div>
+    <div className="mapRoot">
+      {/* Loader for async ops */}
+      {isLoading && <Loader />}
+
       {/* Searchbox */}
       <Search panTo={panTo} radiusUpdate={radiusUpdate} />
 
       {/* Main map */}
       <GoogleMap
         onLoad={onMapLoad}
-        on mapContainerStyle={mapContainerStyle}
+        mapContainerStyle={mapContainerStyle}
         zoom={13} center={currentLoc}
         options={mapOptions}
         onClick={onMapClick}
-      // onBoundsChanged={onMapBoundsChanged}>
-      >
+        onBoundsChanged={onMapBoundsChanged}>
         {/* Circle that shows current radius */}
         <Circle center={currentLoc} options={circleOptions} onLoad={onCircleLoad} onRadiusChanged={onRadiusChanged} />
 
@@ -225,12 +278,15 @@ function Map() {
               origin: new google.maps.Point(0, 0),
               anchor: new google.maps.Point(15, 15)
             }}
-            onMouseOver={() => {
+            onMouseOver={async () => {
+              await getDetails(marker);
               setHoverBrew(marker);
             }}
-            onClick={() => {
+            onClick={async () => {
+              await getDetails(marker);
               setSelectBrew(marker);
             }}
+
           />
         )}
 
@@ -241,12 +297,13 @@ function Map() {
               setHoverBrew(null);
             }}
             position={hoverBrew.position}
-            className="info-window"
           >
             <div>
               <h6>{hoverBrew.name}</h6>
-              <p>{hoverBrew.vicinity}</p>
-              <StarRatings rating={hoverBrew.rating} starDimension="20px" starSpacing="5px" />
+              <p>{hoverBrew.address}</p>
+              <p>{hoverBrew.phone_num}</p>
+              <p>{hoverBrew.opening_hours.isOpen ? (hoverBrew.opening_hours.isOpen() ? "OPEN" : "CLOSED") : "UNKNOWN"}</p>
+              <StarRatings className="star-rating" rating={hoverBrew.rating} starDimension="15px" starSpacing="1px" />{"(" + hoverBrew.user_ratings_total + ")"}
             </div>
           </InfoWindow>
         )}
@@ -254,17 +311,21 @@ function Map() {
         {/* Detailed window when you click a brewery */}
         {selectBrew && (
           <InfoBox
+            options={{ closeBoxURL: '', enableEventPropagation: true }}
             position={NWCorner}
             onCloseClick={() => {
               setSelectBrew(null);
             }}
           >
-            <div class="leftPanel" style={{ backgroundColor: 'white', opacity: 1 }}>
-              <h3>{JSON.stringify(selectBrew.name)}</h3><br></br>
-              {JSON.stringify(selectBrew.vicinity)}<br></br>
-              {`Status: ${JSON.stringify(selectBrew.business_status)}`}<br></br>
-              {`Currently Open: ${JSON.stringify(selectBrew.opening_hours.open_now)}`}<br></br>
-              {`Rating: ${JSON.stringify(selectBrew.rating)}`}<br></br>
+            <div className="leftPanel">
+              <img src={selectBrew.photos[0].getUrl()} />
+              <h5>{selectBrew.name}</h5>
+              <p>{selectBrew.address}</p>
+              <p>Phone Number: {selectBrew.phone_num}</p>
+              <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
+              {selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>)}
+              <h6>Beers</h6>
+              {/* TODO: Add a list of beers available at this brewery, as well as a like button, and if its recommended for you */}
             </div>
           </InfoBox>
         )}
