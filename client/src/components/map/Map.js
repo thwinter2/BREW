@@ -361,7 +361,7 @@ function Map(props) {
               <p>{selectBrew.address}</p>
               <p>Phone Number: {selectBrew.phone_num}</p>
               <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
-              {selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>)}
+              { selectBrew.opening_hours.weekday_text ? selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>) : <p>"Hours Unavailable"</p> }
               <h6>Beers</h6>
               {beers && beers.length ? beers.map(beer => {
                 const isLiked = props.auth.user ? beer.liked_by && beer.liked_by.includes(props.auth.user.email) : false;
