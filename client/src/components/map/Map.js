@@ -224,7 +224,7 @@ function Map(props) {
   };
 
   const likeBeer = (beer, isLiked, email) => {
-    axios.post(`http://localhost:5000/beer/update?id=${beer.id}`, {
+    axios.post(`http://localhost:5000/beer/update/${beer.id}`, {
       like: !isLiked,
       email: email
     }).then(response => {
@@ -364,10 +364,10 @@ function Map(props) {
               {selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>)}
               <h6>Beers</h6>
               {beers && beers.length ? beers.map(beer => {
-                const isLiked = props.auth.user ? beer.like_by && beer.like_by.contains(props.auth.user.email) : false;
-                return <div className="beerTag">
+                const isLiked = props.auth.user ? beer.liked_by && beer.liked_by.includes(props.auth.user.email) : false;
+                return <div className="beerTag" key={beer.id}>
                   <div className="beerName">{beer.name}</div>
-                  {props.auth.user.email ? <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer,  isLiked, props.auth.user.email))}>
+                  {props.auth.user.email ? <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer, isLiked, props.auth.user.email))}>
                     {
                       isLiked
                         ? <img src="images/like.png" />
