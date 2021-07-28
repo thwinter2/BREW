@@ -24,8 +24,7 @@ passport.use(
       proxy: true
     },
     (accessToken, refreshToken, profile, done) => {
-      console.log(profile);
-      User.findOne({ email: profile.email }).then(existingUser => {
+      User.findOne({ 'email': profile.emails[0].value }).then(existingUser => {
         if (existingUser) {
           done(null, existingUser);
         } else {
