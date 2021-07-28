@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import "./Preferences.css";
 
 export default class Preferences extends Component {  
   
@@ -110,28 +111,29 @@ export default class Preferences extends Component {
       
   render() {
     return (
-      <div>
-        <h3 className="bg-dark text-white mt-5 p-4 text-center">
-          Select Your Beer Preferences</h3>
-        <form onSubmit={this.handleSubmit}>
-          <select multiple onChange={this.handleCategoryChange.bind(this)}>
-           {
-            this.state.categories.map(category => (
-               <option value={category._id}>{category.cat_name}</option>
-             ))
-          }
-          </select>
-          <select multiple onChange={this.handleStyleChange.bind(this)}>
-           {
-            this.state.styles.map(style => (
-               <option value={style._id}>{style.style_name}</option>
-             ))
-          }
-          </select>
-          <div>
-          <input type="submit" value="Submit" />
-          </div>
-        </form>
+      <div className="preferencesTitle">
+        <h4>Select Your Beer Preferences</h4>
+        <div>
+          <form onSubmit={this.handleSubmit}>
+            <select multiple onChange={this.handleCategoryChange.bind(this)}>
+            {
+              this.state.categories.map(category => (
+                <option value={category.id}>{category.cat_name}</option>
+                ))
+                }
+            </select>
+            <select multiple onChange={this.handleStyleChange.bind(this)}>
+            {
+              this.state.styles.map(style => (
+                <option value={style.id}>{style.style_name}</option>
+                ))
+                }
+            </select>
+            <div>
+            <input type="submit" value="Submit" className="btn btn-primary"/>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
