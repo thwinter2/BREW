@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 import uuid from "react-uuid";
 import StarRatings from 'react-star-ratings';
 import Search from "../search/Search";
@@ -15,6 +16,7 @@ import {
   InfoWindow,
   InfoBox,
 } from "@react-google-maps/api";
+import axios from "axios";
 
 const libraries = ["places"];
 
@@ -49,7 +51,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function Map() {
+function Map(props) {
   const mapRef = React.useRef();
   const circleRef = React.useRef();
   const serviceRef = React.useRef();
@@ -57,6 +59,9 @@ function Map() {
   const [markers, setMarkers] = React.useState([]);
   const [hoverBrew, setHoverBrew] = React.useState(null);
   const [selectBrew, setSelectBrew] = React.useState(null);
+  const [beers, setBeers] = React.useState([]);
+  const [beersLoading, setBeersLoading] = React.useState(true);
+  const [beersRefresh, setBeersRefresh] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492, // Default location is Jamaica, NY because why not
@@ -171,6 +176,28 @@ function Map() {
 
   }, [currentLoc]);
 
+  React.useEffect(() => {
+    if (!selectBrew) {
+      setBeers([]);
+    } else {
+      setBeersLoading(true);
+      axios.get(`http://localhost:5000/brewery?name=${selectBrew.name}&formatted_address=${selectBrew.formatted_address}`).then(response => {
+        if (response.data && response.data.length > 0) {
+          const brewery = response.data[0];
+          axios.get(`http://localhost:5000/beer?brewery_id=${brewery.id}`).then(resp => {
+            setBeers(resp.data || []);
+          })
+        } else {
+          setBeers([]);
+        }
+      }).catch(() => {
+        setBeers([]);
+      }).finally(() => {
+        setBeersLoading(false);
+      })
+    }
+  }, [selectBrew, beersRefresh])
+
   // Load the google maps API via a script tag
   // And activate the places library
   const { isLoaded, loadError } = useLoadScript({
@@ -194,6 +221,17 @@ function Map() {
   const onMapClick = () => {
     setHoverBrew(null);
     setSelectBrew(null);
+  };
+
+  const likeBeer = (beer, isLiked, email) => {
+    axios.post(`http://localhost:5000/beer/update?id=${beer.id}`, {
+      like: !isLiked,
+      email: email
+    }).then(response => {
+      setBeersRefresh(!beersRefresh)
+    }).catch(() => {
+
+    })
   };
 
   const onMapBoundsChanged = () => {
@@ -325,6 +363,19 @@ function Map() {
               <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
               {selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>)}
               <h6>Beers</h6>
+              {beers && beers.length ? beers.map(beer => {
+                const isLiked = props.auth.user ? beer.like_by && beer.like_by.contains(props.auth.user.email) : false;
+                return <div className="beerTag">
+                  <div className="beerName">{beer.name}</div>
+                  {props.auth.user.email ? <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer,  isLiked, props.auth.user.email))}>
+                    {
+                      isLiked
+                        ? <img src="images/like.png" />
+                        : <img src="images/unlike.png" />
+                    }
+                  </div> : null}
+                </div>
+              }) : beersLoading ? null : 'No beer information for this brewery'}
               {/* TODO: Add a list of beers available at this brewery, as well as a like button, and if its recommended for you */}
             </div>
           </InfoBox>
@@ -335,4 +386,11 @@ function Map() {
   );
 }
 
-export default Map;
+const mapStateToProps = state => ({
+  auth: state.auth
+});
+
+export default connect(
+  mapStateToProps,
+  {}
+)(Map);

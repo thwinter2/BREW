@@ -15,3 +15,24 @@
 .leftPanel img {
     margin-bottom: 1rem;
 }
+
+
+.leftPanel .beerTag {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.leftPanel .beerTag .beerName {
+    margin-right: 12px;
+}
+
+.leftPanel .beerTag .likeBtn {
+    width: 16px;
+    height: 16px;
+}
+.leftPanel .beerTag .likeBtn image {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
