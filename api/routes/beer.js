@@ -17,10 +17,12 @@ router.route('/:id').get((req, res) => {
 });
 
 router.route('/update/:id').post((req, res) => {
-  Beer.findById(req.params.id)
-  .then(beer => {
+  Beer.find()
+  .where('id').equals(req.params.id)
+  .then(beers => {
+    const beer = beers[0];
     const { like, email } = req.body;
-    beer.liked_by = beer.liked_by.filter(item => item != email);
+    beer.liked_by = beer.liked_by ? beer.liked_by.filter(item => item != email) : [];
     if (like) {
       beer.liked_by.push(email);
     }
