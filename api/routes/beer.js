@@ -19,7 +19,11 @@ router.route('/:id').get((req, res) => {
 router.route('/update/:id').post((req, res) => {
   Beer.findById(req.params.id)
   .then(beer => {
-    beer.liked_by = req.body.liked_by;
+    const { like, email } = req.body;
+    beer.liked_by = beer.liked_by.filter(item => item != email);
+    if (like) {
+      beer.liked_by.push(email);
+    }
     beer.save()
     .then(() => res.json('Beer LikedBy Updated!'))
     .catch(err => res.status(400).json('Error: ' + err))
