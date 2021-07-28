@@ -45,7 +45,7 @@ export default class Preferences extends Component {
       console.log(error);
     })
 
-    axios.get('http://localhost:5000/users/61004b28d917d6dd3317f2d3')
+    axios.get('/api/current_user')
     .then(response => {
       this.setState({
         id: response.data._id,
@@ -69,12 +69,10 @@ export default class Preferences extends Component {
     let selectedOption=(event.target.selectedOptions);
  
     for (let i = 0; i < selectedOption.length; i++){
-      console.log(selectedOption.item(i));
       selected.push(selectedOption.item(i).value);
     }
     
     this.setState({selCategories: selected});
-    console.log(this.state);
   }
 
   handleStyleChange(event) {
@@ -83,12 +81,10 @@ export default class Preferences extends Component {
     let selectedOption=(event.target.selectedOptions);
  
     for (let i = 0; i < selectedOption.length; i++){
-      console.log(selectedOption.item(i));
       selected.push(selectedOption.item(i).value);
     }
     
     this.setState({selStyles: selected});
-    console.log(this.state);
   }
       
   handleSubmit(event) {
@@ -106,7 +102,7 @@ export default class Preferences extends Component {
       }
     };
     console.log(user);
-    axios.post('http://localhost:5000/users/update/61004b28d917d6dd3317f2d3', user)
+    axios.post('http://localhost:5000/users/update/' + this.state.id, user)
     .then(res => console.log(res.data));
 
     window.location = '/';
@@ -121,14 +117,14 @@ export default class Preferences extends Component {
           <select multiple onChange={this.handleCategoryChange.bind(this)}>
            {
             this.state.categories.map(category => (
-               <option value={category}>{category.cat_name}</option>
+               <option value={category._id}>{category.cat_name}</option>
              ))
           }
           </select>
           <select multiple onChange={this.handleStyleChange.bind(this)}>
            {
             this.state.styles.map(style => (
-               <option value={style}>{style.style_name}</option>
+               <option value={style._id}>{style.style_name}</option>
              ))
           }
           </select>
