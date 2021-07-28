@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 import uuid from "react-uuid";
 import StarRatings from 'react-star-ratings';
 import Search from "../search/Search";
@@ -50,7 +51,7 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function Map() {
+function Map(props) {
   const mapRef = React.useRef();
   const circleRef = React.useRef();
   const serviceRef = React.useRef();
@@ -59,6 +60,8 @@ function Map() {
   const [hoverBrew, setHoverBrew] = React.useState(null);
   const [selectBrew, setSelectBrew] = React.useState(null);
   const [beers, setBeers] = React.useState([]);
+  const [beersLoading, setBeersLoading] = React.useState(true);
+  const [beersRefresh, setBeersRefresh] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492, // Default location is Jamaica, NY because why not
@@ -177,6 +180,7 @@ function Map() {
     if (!selectBrew) {
       setBeers([]);
     } else {
+      setBeersLoading(true);
       axios.get(`http://localhost:5000/brewery?name=${selectBrew.name}&formatted_address=${selectBrew.formatted_address}`).then(response => {
         if (response.data && response.data.length > 0) {
           const brewery = response.data[0];
@@ -188,9 +192,11 @@ function Map() {
         }
       }).catch(() => {
         setBeers([]);
+      }).finally(() => {
+        setBeersLoading(false);
       })
     }
-  }, [selectBrew])
+  }, [selectBrew, beersRefresh])
 
   // Load the google maps API via a script tag
   // And activate the places library
@@ -217,17 +223,12 @@ function Map() {
     setSelectBrew(null);
   };
 
-  const likeBeer = (beer, isLiked, uid) => {
-    const liked_by = [...(beer.like_by || [])];
-    if (isLiked) {
-      liked_by = liked_by.filter(item => item != uid)
-    } else {
-      liked_by.push(uid)
-    }
+  const likeBeer = (beer, isLiked, email) => {
     axios.post(`http://localhost:5000/beer/update?id=${beer.id}`, {
-      liked_by: liked_by
+      like: !isLiked,
+      email: email
     }).then(response => {
-      console.log(response);        
+      setBeersRefresh(!beersRefresh)
     }).catch(() => {
 
     })
@@ -362,19 +363,19 @@ function Map() {
               <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
               {selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>)}
               <h6>Beers</h6>
-              {beers ? beers.map(beer => {
-                const isLiked = beer.like_by && beer.like_by.contains(1);
+              {beers && beers.length ? beers.map(beer => {
+                const isLiked = props.auth.user ? beer.like_by && beer.like_by.contains(props.auth.user.email) : false;
                 return <div className="beerTag">
                   <div className="beerName">{beer.name}</div>
-                  <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer,  isLiked))}>
+                  {props.auth.user.email ? <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer,  isLiked, props.auth.user.email))}>
                     {
                       isLiked
                         ? <img src="images/like.png" />
                         : <img src="images/unlike.png" />
                     }
-                  </div>
+                  </div> : null}
                 </div>
-              }) : null}
+              }) : beersLoading ? null : 'No beer information for this brewery'}
               {/* TODO: Add a list of beers available at this brewery, as well as a like button, and if its recommended for you */}
             </div>
           </InfoBox>
@@ -385,4 +386,11 @@ function Map() {
   );
 }
 
-export default Map;
+const mapStateToProps = state => ({
+  auth: state.auth
+});
+
+export default connect(
+  mapStateToProps,
+  {}
+)(Map);
