@@ -15,6 +15,7 @@ import {
   InfoWindow,
   InfoBox,
 } from "@react-google-maps/api";
+import axios from "axios";
 
 const libraries = ["places"];
 
@@ -57,6 +58,7 @@ function Map() {
   const [markers, setMarkers] = React.useState([]);
   const [hoverBrew, setHoverBrew] = React.useState(null);
   const [selectBrew, setSelectBrew] = React.useState(null);
+  const [beers, setBeers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492, // Default location is Jamaica, NY because why not
@@ -171,6 +173,25 @@ function Map() {
 
   }, [currentLoc]);
 
+  React.useEffect(() => {
+    if (!selectBrew) {
+      setBeers([]);
+    } else {
+      axios.get(`http://localhost:5000/brewery?name=${selectBrew.name}&formatted_address=${selectBrew.formatted_address}`).then(response => {
+        if (response.data && response.data.length > 0) {
+          const brewery = response.data[0];
+          axios.get(`http://localhost:5000/beer?brewery_id=${brewery.id}`).then(resp => {
+            setBeers(resp.data || []);
+          })
+        } else {
+          setBeers([]);
+        }
+      }).catch(() => {
+        setBeers([]);
+      })
+    }
+  }, [selectBrew])
+
   // Load the google maps API via a script tag
   // And activate the places library
   const { isLoaded, loadError } = useLoadScript({
@@ -194,6 +215,22 @@ function Map() {
   const onMapClick = () => {
     setHoverBrew(null);
     setSelectBrew(null);
+  };
+
+  const likeBeer = (beer, isLiked, uid) => {
+    const liked_by = [...(beer.like_by || [])];
+    if (isLiked) {
+      liked_by = liked_by.filter(item => item != uid)
+    } else {
+      liked_by.push(uid)
+    }
+    axios.post(`http://localhost:5000/beer/update?id=${beer.id}`, {
+      liked_by: liked_by
+    }).then(response => {
+      console.log(response);        
+    }).catch(() => {
+
+    })
   };
 
   const onMapBoundsChanged = () => {
@@ -325,6 +362,19 @@ function Map() {
               <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
               {selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>)}
               <h6>Beers</h6>
+              {beers ? beers.map(beer => {
+                const isLiked = beer.like_by && beer.like_by.contains(1);
+                return <div className="beerTag">
+                  <div className="beerName">{beer.name}</div>
+                  <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer,  isLiked))}>
+                    {
+                      isLiked
+                        ? <img src="images/like.png" />
+                        : <img src="images/unlike.png" />
+                    }
+                  </div>
+                </div>
+              }) : null}
               {/* TODO: Add a list of beers available at this brewery, as well as a like button, and if its recommended for you */}
             </div>
           </InfoBox>
