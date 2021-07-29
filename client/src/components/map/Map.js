@@ -63,6 +63,7 @@ function Map(props) {
   const [beersLoading, setBeersLoading] = React.useState(true);
   const [beersRefresh, setBeersRefresh] = React.useState(true);
   const [beersRecommendations, setBeersRecommendations] = React.useState([]);
+  const [beersRecommendationsByOthers, setBeersRecommendationsByOthers] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492, // Default location is Jamaica, NY because why not
@@ -204,7 +205,16 @@ function Map(props) {
         setBeersRecommendations(response.data || []);
       }).catch(() => {
   
+      });
+      axios.post(`http://localhost:5000/recommendation/byOthers`, {
+        selectBrew: selectBrew
       })
+      .then(response => {
+        console.log(response)
+        setBeersRecommendationsByOthers(response.data || []);
+      }).catch(() => {
+  
+      });
     }
   }, [selectBrew, beersRefresh])
 
@@ -395,7 +405,12 @@ function Map(props) {
                   <div className="beerName">{beersRecommendation.name}</div>
                 </div>
               }) : beersLoading ? null : 'No beer recommendations based on preferences'}
-              <h6>Others also liked</h6>
+              <h6>Local Favorites</h6>
+              {beersRecommendationsByOthers && beersRecommendationsByOthers.length ? beersRecommendationsByOthers.map(beersRecommendationByOthers => {
+                return <div className="beerTag" key={beersRecommendationByOthers.id}>
+                  <div className="beerName">{beersRecommendationByOthers.name}</div>
+                </div>
+              }) : beersLoading ? null : 'No beer recommendations in the area'}
             </div>
           </InfoBox>
         )}
