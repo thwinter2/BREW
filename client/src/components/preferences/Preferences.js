@@ -167,11 +167,18 @@ export default class Preferences extends Component {
   }
       
   render() {
+    const hasPreferences = [...this.state.preferences.styles, ...this.state.preferences.categories];
+    const isLoggedIn = this.state.email;
+
     return (
+      <div>
+        { isLoggedIn
+        ? <React.Fragment>
         <div className="preferencesTitle">
-        <h4>Your Current Beer Preferences</h4>
-        <strong>Select and Submit to Remove</strong>
-        <div>
+          { hasPreferences.length
+          ? <React.Fragment>
+          <h4>Your Current Beer Preferences</h4>
+          <strong>Select and Submit to Remove</strong>
           <form onSubmit={this.handleRemoveSubmit}>
             <select multiple onChange={this.handleCategoryRemove.bind(this)}>
             {
@@ -191,6 +198,8 @@ export default class Preferences extends Component {
             <input type="submit" value="Submit" className="btn btn-primary"/>
             </div>
           </form>
+          </React.Fragment>
+          : null}
           <br></br>
           <div className="preferencesTitle">
             <h4>Select Your Beer Preferences</h4>
@@ -218,6 +227,8 @@ export default class Preferences extends Component {
             </div>
           </div>
         </div>
+        </React.Fragment>
+        : null}
       </div>
     );
   }
