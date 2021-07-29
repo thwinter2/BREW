@@ -40,20 +40,26 @@
   align-items: center;
 }
 
-.coffee-btn-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.landing {
+  background: url("img/bar.jpg") no-repeat;
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  margin-top: -24px;
 }
 
-
-.coffee-btn-container a {
-  width: 180px;
-  margin-top: 25px;
+.dark-overlay {
+  background-color: rgba(0, 0, 0, 0.7);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.coffee-btn-container img {
-  width: 180px;
-  margin-top: 25px;
-  border-radius: 0;
+.landing-container {
+  padding: 1rem;
+}
+
+.preferences {
+  margin-top: 10rem;
 }

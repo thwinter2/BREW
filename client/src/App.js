@@ -31,10 +31,6 @@ function App() {
         <div className="App">
           <Navbar />
           <Route exact path="/" component={Landing} />
-          <div className="container">
-            <Route exact path="/profile" component={Profile} />
-          </div>
-          <Preferences />
           <Map />
           <Footer />
         </div>
