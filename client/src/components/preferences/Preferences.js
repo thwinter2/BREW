@@ -167,55 +167,59 @@ export default class Preferences extends Component {
   }
       
   render() {
+    const hasPreferences = [...this.state.preferences.styles, ...this.state.preferences.categories];
+    
     return (
-        <div className="preferencesTitle">
+      <div className="preferencesTitle">
+        { hasPreferences.length
+        ? <React.Fragment>
         <h4>Your Current Beer Preferences</h4>
         <strong>Select and Submit to Remove</strong>
-        <div>
-          <form onSubmit={this.handleRemoveSubmit}>
-            <select multiple onChange={this.handleCategoryRemove.bind(this)}>
-            {
-              this.state.categoryObjects.map(category => (
-                <option value={category.id}>{category.cat_name}</option>
-                ))
-              }
-            </select>
-            <select multiple onChange={this.handleStyleRemove.bind(this)}>
-            {
-              this.state.styleObjects.map(style => (
-                <option value={style.id}>{style.style_name}</option>
-                ))
-              }
-            </select>
-            <div>
-            <input type="submit" value="Submit" className="btn btn-primary"/>
-            </div>
-          </form>
-          <br></br>
-          <div className="preferencesTitle">
-            <h4>Select Your Beer Preferences</h4>
-            <strong>Select and Submit to Add</strong>
-            <div>
-              <form onSubmit={this.handleAddSubmit}>
-                <select multiple onChange={this.handleCategoryAdd.bind(this)}>
-                {
-                  this.state.categories.map(category => (
-                    <option value={category.id}>{category.cat_name}</option>
-                    ))
-                  }
-                </select>
-                <select multiple onChange={this.handleStyleAdd.bind(this)}>
-                {
-                  this.state.styles.map(style => (
-                    <option value={style.id}>{style.style_name}</option>
-                    ))
-                  }
-                </select>
-                <div>
-                <input type="submit" value="Submit" className="btn btn-primary"/>
-                </div>
-              </form>
-            </div>
+        <form onSubmit={this.handleRemoveSubmit}>
+          <select multiple onChange={this.handleCategoryRemove.bind(this)}>
+          {
+            this.state.categoryObjects.map(category => (
+              <option value={category.id}>{category.cat_name}</option>
+              ))
+            }
+          </select>
+          <select multiple onChange={this.handleStyleRemove.bind(this)}>
+          {
+            this.state.styleObjects.map(style => (
+              <option value={style.id}>{style.style_name}</option>
+              ))
+            }
+          </select>
+          <div>
+          <input type="submit" value="Submit" className="btn btn-primary"/>
+          </div>
+        </form>
+        </React.Fragment>
+        : null}
+        <br></br>
+        <div className="preferencesTitle">
+          <h4>Select Your Beer Preferences</h4>
+          <strong>Select and Submit to Add</strong>
+          <div>
+            <form onSubmit={this.handleAddSubmit}>
+              <select multiple onChange={this.handleCategoryAdd.bind(this)}>
+              {
+                this.state.categories.map(category => (
+                  <option value={category.id}>{category.cat_name}</option>
+                  ))
+                }
+              </select>
+              <select multiple onChange={this.handleStyleAdd.bind(this)}>
+              {
+                this.state.styles.map(style => (
+                  <option value={style.id}>{style.style_name}</option>
+                  ))
+                }
+              </select>
+              <div>
+              <input type="submit" value="Submit" className="btn btn-primary"/>
+              </div>
+            </form>
           </div>
         </div>
       </div>
