@@ -59,8 +59,8 @@ export default class Preferences extends Component {
         email: response.data.email,
         photo: response.data.photo,
         preferences: {
-          styles: response.data.preferences.styles,
-          categories: response.data.preferences.categories,
+          styles: response.data? response.data.preferences.styles : "",
+          categories: response.data? response.data.preferences.categories : "",
         }
       })
     })
