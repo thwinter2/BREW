@@ -46,7 +46,8 @@ export default class Preferences extends Component {
       console.log(error);
     })
 
-    axios.get('/api/current_user')
+    axios.get('/api/current_user/')
+    // axios.get('http://localhost:5000/users/email/thwinter@ncsu.edu')
     .then(response => {
       this.setState({
         id: response.data._id,
@@ -72,7 +73,8 @@ export default class Preferences extends Component {
     for (let i = 0; i < selectedOption.length; i++){
       selected.push(selectedOption.item(i).value);
     }
-    
+    console.log(`selCategories: ${this.state.selCategories}`);
+    console.log(`user.preferences.categories: ${this.state.preferences.categories}`);
     this.setState({selCategories: selected});
   }
 
@@ -91,15 +93,15 @@ export default class Preferences extends Component {
   handleSubmit(event) {
     console.log(this.state);
     event.preventDefault();
-    let catSet = [...new Set([...this.state.categories, ...this.state.selCategories])];
+    let stylesSet = [...new Set([...this.state.preferences.styles, ...this.state.selStyles])];
+    let categoriesSet = [...new Set([...this.state.preferences.categories, ...this.state.selCategories])];
     const user = {
       name: this.state.name,
       email: this.state.email,
       photo: this.state.photo,
       preferences: {
-        styles: this.state.selStyles,
-        categories: this.state.selCategories,
-        // categories: catSet,
+        styles: stylesSet,
+        categories: categoriesSet,
       }
     };
     console.log(user);
