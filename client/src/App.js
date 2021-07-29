@@ -3,12 +3,10 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import store from "./store";
 
-import Profile from "./components/profile/Profile";
 import Landing from "./components/landing/Landing";
 import Footer from "./components/footer/Footer";
 import Navbar from "./components/navbar/Navbar";
 import Map from './components/map/Map';
-import Preferences from './components/preferences/Preferences';
 
 import "./App.css";
 
@@ -40,4 +38,3 @@ function App() {
 }
 
 export default App;
-

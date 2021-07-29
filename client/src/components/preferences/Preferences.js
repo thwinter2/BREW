@@ -149,7 +149,7 @@ export default class Preferences extends Component {
     this.submit(stylesSet, categoriesSet);
   }
 
-  submit(stylesSet, categoriesSet) {
+  async submit(stylesSet, categoriesSet) {
     const user = {
       name: this.state.name,
       email: this.state.email,
@@ -160,16 +160,16 @@ export default class Preferences extends Component {
       }
     };
     console.log(user);
-    axios.post('http://localhost:5000/users/update/' + this.state.id, user)
-      .then(res => console.log(res.data));
+    let res = await axios.post('http://localhost:5000/users/update/' + this.state.id, user)
+    console.log(res.data);
 
     // window.location = '/';
   }
 
-  styleClicked(id) {
+  async styleClicked(id) {
     let styleContainerId = "beer_style_" + id;
     let styleContainerImgId = styleContainerId + "_image";
-    
+
     let styleContainerDiv = document.getElementById(styleContainerId);
     let styleContainerDivImg = document.getElementById(styleContainerImgId);
 
@@ -184,21 +184,18 @@ export default class Preferences extends Component {
 
     let isStyleActive = styleContainerDiv.classList.contains('activeStyle');
 
+    let stylesSet = this.state.preferences.styles;
     if (isStyleActive) {
-      let stylesSet = [...new Set([...this.state.preferences.styles, id])];
-      let categoriesSet = [...new Set([...this.state.preferences.categories, ...this.state.addCategories])];
-      this.submit(stylesSet, categoriesSet);
+      stylesSet.push(id);
     }
     else {
-      let trimmedStyles = this.state.preferences.styles;
-      const index = trimmedStyles.indexOf(id);
+      const index = stylesSet.indexOf(id);
       if (index > -1) {
-        trimmedStyles.splice(index, 1);
+        stylesSet.splice(index, 1);
       }
-      let stylesSet = [...new Set(trimmedStyles)]
-      let categoriesSet = [...new Set([...this.state.preferences.categories, ...this.state.addCategories])];
-      this.submit(stylesSet, categoriesSet);
     }
+
+    await this.submit(stylesSet, this.state.preferences.categories)
   }
 
   render() {
