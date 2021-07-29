@@ -7,4 +7,5 @@ module.exports = function(app) {
   app.use(proxy("/styles/", { target: "http://localhost:5000/" }));
   app.use(proxy("/categories/", { target: "http://localhost:5000/" }));
   app.use(proxy("/users/", { target: "http://localhost:5000/" }));
+  app.use(proxy("/recommendation/", { target: "http://localhost:5000/" }));
 };

@@ -16,6 +16,7 @@ class Profile extends React.Component {
   }
   render() {
     if (this.props.auth.isAuthenticated) {
+      console.log(this.props.auth.user)
       return (
         <div className="jumbotron">
           <h1 className="display-4">Cheers, {this.props.auth.user.name}!</h1>

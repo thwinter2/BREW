@@ -53,4 +53,6 @@ footer {
 div.leftPanel {
   transform: scale(1);
   padding-bottom: 50em;
+  overflow: auto !important;
+  height: 1000px;
 }

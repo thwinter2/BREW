@@ -62,6 +62,7 @@ function Map(props) {
   const [beers, setBeers] = React.useState([]);
   const [beersLoading, setBeersLoading] = React.useState(true);
   const [beersRefresh, setBeersRefresh] = React.useState(true);
+  const [beersRecommendations, setBeersRecommendations] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentLoc, setCurrentLoc] = React.useState({
     lat: 40.691492, // Default location is Jamaica, NY because why not
@@ -194,10 +195,22 @@ function Map(props) {
         setBeers([]);
       }).finally(() => {
         setBeersLoading(false);
+      });
+      axios.post(`http://localhost:5000/recommendation/byPreferences`, {
+        preferences: props.auth.user.preferences
+      })
+      .then(response => {
+        console.log(response)
+        setBeersRecommendations(response.data || []);
+      }).catch(() => {
+  
       })
     }
   }, [selectBrew, beersRefresh])
 
+
+
+  
   // Load the google maps API via a script tag
   // And activate the places library
   const { isLoaded, loadError } = useLoadScript({
@@ -362,7 +375,7 @@ function Map(props) {
               <p>Phone Number: {selectBrew.phone_num}</p>
               <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
               { selectBrew.opening_hours.weekday_text ? selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>) : <p>"Hours Unavailable"</p> }
-              <h6>Beers</h6>
+              <h6>Beer List</h6>
               {beers && beers.length ? beers.map(beer => {
                 const isLiked = props.auth.user ? beer.liked_by && beer.liked_by.includes(props.auth.user.email) : false;
                 return <div className="beerTag" key={beer.id}>
@@ -376,7 +389,13 @@ function Map(props) {
                   </div> : null}
                 </div>
               }) : beersLoading ? null : 'No beer information for this brewery'}
-              {/* TODO: Add a list of beers available at this brewery, as well as a like button, and if its recommended for you */}
+              <h6>Your Top 10 Recommendations</h6>
+              {beersRecommendations && beersRecommendations.slice(0, 10).length ? beersRecommendations.slice(0, 10).map(beersRecommendation => {
+                return <div className="beerTag" key={beersRecommendation.id}>
+                  <div className="beerName">{beersRecommendation.name}</div>
+                </div>
+              }) : beersLoading ? null : 'No beer recommendations based on preferences'}
+              <h6>Others also liked</h6>
             </div>
           </InfoBox>
         )}
