@@ -7,9 +7,6 @@ export default class Preferences extends Component {
   constructor() {
     super();
     this.state = {
-      categories: [],
-      addCategories: [],
-      removeCategories: [],
       styles: [],
       addStyles: [],
       removeStyles: [],
@@ -18,29 +15,16 @@ export default class Preferences extends Component {
       photo: '',
       preferences: {
         styles: [],
-        categories: [],
       },
       styleObjects: [],
-      categoryObjects: [],
     };
 
-    this.handleCategoryAdd = this.handleCategoryAdd.bind(this);
     this.handleStyleAdd = this.handleStyleAdd.bind(this);
     this.handleAddSubmit = this.handleAddSubmit.bind(this);
     this.handleRemoveSubmit = this.handleRemoveSubmit.bind(this);
   }
 
   componentDidMount() {
-    axios.get('http://localhost:5000/categories/')
-      .then(response => {
-        this.setState({
-          categories: response.data
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-
     axios.get('http://localhost:5000/styles/')
       .then(response => {
         this.setState({
@@ -60,21 +44,10 @@ export default class Preferences extends Component {
           photo: response.data.photo,
           preferences: {
             styles: response.data ? response.data.preferences.styles : "",
-            categories: response.data ? response.data.preferences.categories : "",
           }
         })
       })
       .then(() => {
-        axios.post('http://localhost:5000/categories/preferences', this.state.preferences.categories)
-          .then(response => {
-            this.setState({
-              categoryObjects: response.data
-            });
-          })
-          .catch((error) => {
-            console.log(error);
-          })
-
         axios.post('http://localhost:5000/styles/preferences', this.state.preferences.styles)
           .then(response => {
             this.setState({
@@ -85,26 +58,6 @@ export default class Preferences extends Component {
             console.log(error);
           })
       })
-  }
-
-  handleCategoryAdd(event) {
-    const selected = [];
-    let selectedOption = (event.target.selectedOptions);
-
-    for (let i = 0; i < selectedOption.length; i++) {
-      selected.push(selectedOption.item(i).value);
-    }
-    this.setState({ addCategories: selected });
-  }
-
-  handleCategoryRemove(event) {
-    const selected = [];
-    let selectedOption = (event.target.selectedOptions);
-
-    for (let i = 0; i < selectedOption.length; i++) {
-      selected.push(selectedOption.item(i).value);
-    }
-    this.setState({ removeCategories: selected });
   }
 
   handleStyleAdd(event) {
@@ -131,8 +84,7 @@ export default class Preferences extends Component {
     console.log(this.state);
     event.preventDefault();
     let stylesSet = [...new Set([...this.state.preferences.styles, ...this.state.addStyles])];
-    let categoriesSet = [...new Set([...this.state.preferences.categories, ...this.state.addCategories])];
-    this.submit(stylesSet, categoriesSet);
+    this.submit(stylesSet);
   }
 
   handleRemoveSubmit(event) {
@@ -142,21 +94,16 @@ export default class Preferences extends Component {
     for (let elm of this.state.removeStyles) {
       stylesSet = stylesSet.filter(e => e !== elm);
     }
-    var categoriesSet = this.state.preferences.categories;
-    for (let elm of this.state.removeCategories) {
-      categoriesSet = categoriesSet.filter(e => e !== elm);
-    }
-    this.submit(stylesSet, categoriesSet);
+    this.submit(stylesSet);
   }
 
-  async submit(stylesSet, categoriesSet) {
+  async submit(stylesSet) {
     const user = {
       name: this.state.name,
       email: this.state.email,
       photo: this.state.photo,
       preferences: {
         styles: stylesSet,
-        categories: categoriesSet,
       }
     };
     console.log(user);
@@ -226,13 +173,6 @@ export default class Preferences extends Component {
       //             <h4>Your Current Beer Preferences</h4>
       //             <strong>Select and Submit to Remove</strong>
       //             <form onSubmit={this.handleRemoveSubmit}>
-      //               {/* <select multiple onChange={this.handleCategoryRemove.bind(this)}>
-      //                 {
-      //                   this.state.categoryObjects.map(category => (
-      //                     <option value={category.id}>{category.cat_name}</option>
-      //                   ))
-      //                 }
-      //               </select> */}
       //               <select multiple onChange={this.handleStyleRemove.bind(this)}>
       //                 {
       //                   this.state.styleObjects.map(style => (
@@ -254,12 +194,6 @@ export default class Preferences extends Component {
       //         <strong>Select and Submit to Add</strong>
       //         <div>
       //           <form onSubmit={this.handleAddSubmit}>
-      //             {/* <select multiple onChange={this.handleCategoryAdd.bind(this)}>
-      //               {
-      //                 this.state.categories.map(category => (
-      //                   <option value={category.id}>{category.cat_name}</option>
-      //                 ))
-      //               }
       //             </select> */}
       //             <select multiple onChange={this.handleStyleAdd.bind(this)}>
       //               {
