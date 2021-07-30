@@ -188,6 +188,15 @@ function Map(props) {
           const brewery = response.data[0];
           axios.get(`http://localhost:5000/beer?brewery_id=${brewery.id}`).then(resp => {
             setBeers(resp.data || []);
+
+            // After getting beers, get if they're recommended
+            axios.post(`http://localhost:5000/recommendation/byOthersTastes`, {
+              preferences: props.auth.user.preferences,
+              beers: resp.data
+            }).then(r => {
+              console.log(r);
+              setBeers(r.data)
+            });
           })
         } else {
           setBeers([]);
@@ -197,30 +206,32 @@ function Map(props) {
       }).finally(() => {
         setBeersLoading(false);
       });
+
       axios.post(`http://localhost:5000/recommendation/byPreferences`, {
         preferences: props.auth.user.preferences
       })
-      .then(response => {
-        console.log(response)
-        setBeersRecommendations(response.data || []);
-      }).catch(() => {
-  
-      });
+        .then(response => {
+          console.log(response)
+          setBeersRecommendations(response.data || []);
+        }).catch(() => {
+
+        });
+
       axios.post(`http://localhost:5000/recommendation/byOthers`, {
         selectBrew: selectBrew
       })
-      .then(response => {
-        console.log(response)
-        setBeersRecommendationsByOthers(response.data || []);
-      }).catch(() => {
-  
-      });
+        .then(response => {
+          console.log(response)
+          setBeersRecommendationsByOthers(response.data || []);
+        }).catch(() => {
+
+        });
     }
-  }, [selectBrew, beersRefresh])
+  }, [selectBrew, beersRefresh]);
 
 
 
-  
+
   // Load the google maps API via a script tag
   // And activate the places library
   const { isLoaded, loadError } = useLoadScript({
@@ -384,12 +395,16 @@ function Map(props) {
               <p>{selectBrew.address}</p>
               <p>Phone Number: {selectBrew.phone_num}</p>
               <h6>Hours ({selectBrew.opening_hours.isOpen ? (selectBrew.opening_hours.isOpen() ? "Open Now" : "Closed") : "Status Unknown"})</h6>
-              { selectBrew.opening_hours.weekday_text ? selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>) : <p>"Hours Unavailable"</p> }
+              {selectBrew.opening_hours.weekday_text ? selectBrew.opening_hours.weekday_text.map(text => <p>{text}</p>) : <p>"Hours Unavailable"</p>}
               <h6>Beer List</h6>
               {beers && beers.length ? beers.map(beer => {
                 const isLiked = props.auth.user ? beer.liked_by && beer.liked_by.includes(props.auth.user.email) : false;
                 return <div className="beerTag" key={beer.id}>
                   <div className="beerName">{beer.name}</div>
+                  {beer.isRecommended ?
+                    <div className="recommendedBtn">
+                      <img src="images/recommended.png" />
+                    </div> : null}
                   {props.auth.user.email ? <div className="likeBtn" onClick={e => (e.stopPropagation(), likeBeer(beer, isLiked, props.auth.user.email))}>
                     {
                       isLiked
