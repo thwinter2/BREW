@@ -142,11 +142,11 @@ export default class Preferences extends Component {
       }
     }
 
-    await this.submit(stylesSet, this.state.preferences.categories)
+    await this.submit(stylesSet)
   }
 
   render() {
-    // const hasPreferences = [...this.state.preferences.styles, ...this.state.preferences.categories];
+    // const hasPreferences = this.state.preferences.styles;
     // const isLoggedIn = this.state.email;
 
     return (
